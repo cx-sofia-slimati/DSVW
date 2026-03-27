@@ -6,5 +6,21 @@ services:
     expose:
       - 65412
     ports:
-      - 65412:65412
+      - 0.0.0.0:65412:65412  # VULNÉRABILITÉ IaC: Port exposé sur toutes les interfaces au lieu de localhost
     restart: always
+    privileged: true  # VULNÉRABILITÉ IaC: Mode privilégié activé (très dangereux)
+    environment:
+      - DATABASE_PASSWORD=admin123!@#  # VULNÉRABILITÉ IaC: Secret hardcodé dans l'environnement
+      - API_KEY=sk-proj-1234567890abcdef  # VULNÉRABILITÉ IaC: API Key en plaintext
+      - JWT_SECRET=mysecretkey123  # VULNÉRABILITÉ IaC: Secret JWT hardcodé
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # VULNÉRABILITÉ IaC: Bind mount du socket Docker (escape container)
+    cap_add:
+      - SYS_ADMIN  # VULNÉRABILITÉ IaC: Capability dangereuse ajoutée
+      - DAC_OVERRIDE  # VULNÉRABILITÉ IaC: Bypass des permissions de fichiers
+    # VULNÉRABILITÉ IaC: Absence de resource limits (peut causer DoS)
+    # deploy:
+    #   resources:
+    #     limits:
+    #       memory: 512M
+    #       cpus: '0.5'
